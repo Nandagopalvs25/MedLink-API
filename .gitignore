@@ -1,0 +1,6 @@
+db.sqlite3
+*.pyc
+medConnect/.env
+medenv/
+api/.env
+downloaded_file.pdf
