@@ -138,17 +138,26 @@ class AiChatView(APIView):
         vector_store=pinecone_utils.get_vector_store()
         context = vector_store.similarity_search(prompt,k=10,filter={"userid": str(patient_id)}, )
         model = genai.GenerativeModel(
-                  model_name="gemini-2.0-flash",
-              system_instruction=(
-        "You are an AI assistant for doctors, designed to retrieve and summarize patient health records accurately. "
-        "Your responses must be strictly relevant to the query and should not include additional information. "
-        "If the query asks for a specific detail (e.g., patient's name), respond with only that detail and nothing more. "
-        "Avoid unnecessary explanations, context, or formatting. "
-        "Ensure responses are concise, medically appropriate, and based solely on the provided patient data."
-         )
-            )
-        query = f"Strictly extract and return only the requested detail: {prompt}"
-        context_text = "\n".join([doc.page_content for doc in context])
+                model_name="gemini-2.0-flash",
+                system_instruction=(
+                "You are an AI-powered medical assistant designed to assist doctors in retrieving and analyzing patient medical records. "
+                "You provide structured and insightful responses based on available data while maintaining compliance with medical ethics, privacy regulations (e.g., HIPAA, ABHA), and patient confidentiality. "
+                "You only retrieve patient data when explicitly requested and do not disclose information unless the query contains a valid request for medical records. "
+                "If the input is a casual or general question, respond conversationally instead of fetching medical data. "
+                "Your responses should be concise, clear, and medically relevant when required."
+        )
+        )
+
+        query = f"""
+                Determine the intent of the following user input. 
+                - If the query is related to patient medical records, retrieve relevant structured data and present it clearly. 
+                - If the input is a general or casual question, respond naturally without referencing medical data. 
+                - Do not disclose patient information unless explicitly requested with a valid identifier.
+
+                User Input: {prompt}
+                """
+        context_text = "\n".join([doc.page_content for doc in context]) if context else "No additional context available."
+        response = model.generate_content([query, context_text])
         response = model.generate_content([query, context_text])
         result = response.text
         print(context)
