@@ -118,7 +118,7 @@ class RecordView(APIView):
            vector_store.add_documents(documents=documents, ids=uuids)
            record=Record.objects.create(patient=patientr,name=request.data['name'],url=request.data['url'],summary=geminidata['summary'])
            for i in geminidata['tags']:
-               record.tags.add(i)
+               record.tags.add(i.lower())
                print(record)
            return HttpResponse("Succesfully Created")
     def get(self,request,*args, **kwargs):
