@@ -71,15 +71,41 @@ class RecordView(APIView):
            download_pdf_from_drive(drive_link, local_pdf_path)
            img_file = genai.upload_file(path=local_pdf_path)
            print(f"Uploaded file '{img_file.display_name}' as: {img_file.uri}")
-           model = genai.GenerativeModel(model_name="gemini-2.0-flash",generation_config={"response_mime_type": "application/json"})
+           model = genai.GenerativeModel(
+                     model_name="gemini-2.0-flash",
+                     system_instruction=(
+                            "You are an advanced AI-powered medical assistant designed to analyze medical documents and provide structured insights. "
+                            "Your primary function is to extract all relevant medical details and generate a comprehensive, well-structured summary. "
+                            "Ensure that no critical medical information is omitted, and highlight any abnormalities, diagnoses, test results, and treatments. "
+                            "You must always adhere to medical privacy regulations (e.g., HIPAA, ABHA) and ensure patient confidentiality. "
+                            "Your responses should be formatted strictly as valid JSON to maintain consistency and readability. "
+                            "Additionally, if no relevant medical data is found in the document, return an empty summary and an empty list of keywords."
+                        ),
+                    generation_config={"response_mime_type": "application/json"}
+                        )
+           
            prompt = (
-                     "Thoroughly analyze the provided medical document and generate a **detailed yet concise summary** under the key 'summary'. "
-                     "The summary **must include all relevant details** from the document while maintaining clarity and readability. "
-                     "Ensure that no key medical information is omitted. "
-                     "Highlight any irregularities, critical observations, diagnoses, treatments, test results, and relevant medical insights. "
-                     "Additionally, extract and list keywords related to the report (such as diseases, conditions, symptoms, medications, or health categories) "
-                     "under the key 'tags'. Format the response strictly as valid JSON."
-           )
+                    "Analyze the provided medical document and extract all relevant details. "
+                    "Generate a **comprehensive and structured summary** under the key 'summary'. "
+                    "Ensure that the summary includes all medical history, symptoms, diagnoses, test results, prescribed medications, treatments, and doctor's notes. "
+                    "Highlight any **irregularities, critical observations, or important insights** explicitly. "
+                    "Additionally, extract **key medical terms** such as diseases, conditions, symptoms, medications, and test names under the key 'tags'. "
+                    "The response **must be formatted as a valid JSON object** with the following structure:\n\n"
+                    "```json\n"
+                    "{\n"
+                    '    "summary": "<detailed medical summary>",\n'
+                    '    "tags": ["keyword1", "keyword2", "keyword3"]\n'
+                    "}\n"
+                    "```\n"
+                    "If the document does not contain relevant medical data, return:\n"
+                    "```json\n"
+                    "{\n"
+                    '    "summary": "",\n'
+                    '    "tags": []\n'
+                    "}\n"
+                    "```\n"
+                    "Ensure accuracy, maintain clarity, and strictly follow the required JSON format."
+                    )
            response = model.generate_content([prompt, img_file])
            geminidata=json.loads(response.text)
            vector_store=pinecone_utils.get_vector_store()
