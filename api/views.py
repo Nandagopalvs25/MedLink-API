@@ -47,7 +47,7 @@ class PostView(APIView):
            print(response.text)
            geminidata=json.loads(response.text)
            for i in geminidata['tags']:
-               posts.tags.add(i)
+               posts.tags.add(i.lower())
            #print(posts.tags.names())
            records=Record.objects.filter(tags__name__in=[posts.tags.names()]).distinct()
            for i in records:
