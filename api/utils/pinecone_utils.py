@@ -13,7 +13,7 @@ vector_store=None
 
 def init_pinecone():
     global vector_store
-    load_dotenv()
+    #load_dotenv()
     pinecone_api_key = os.getenv("PINECONE_API_KEY")
     pc = Pinecone(api_key=pinecone_api_key)
     index_name = "medconnect"  
