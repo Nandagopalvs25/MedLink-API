@@ -15,6 +15,8 @@ def init_pinecone():
     global vector_store
     #load_dotenv()
     pinecone_api_key = os.getenv("PINECONE_API_KEY")
+    if not pinecone_api_key:
+        raise ValueError("Pinecone API Key is missing! Check your environment variables.")
     pc = Pinecone(api_key=pinecone_api_key)
     index_name = "medconnect"  
 
