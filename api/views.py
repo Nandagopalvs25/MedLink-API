@@ -184,7 +184,6 @@ class AiChatView(APIView):
                 """
         context_text = "\n".join([doc.page_content for doc in context]) if context else "No additional context available."
         response = model.generate_content([query, context_text])
-        response = model.generate_content([query, context_text])
         result = response.text
         print(context)
         return JsonResponse({"response": result})
